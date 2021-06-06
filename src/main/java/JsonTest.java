@@ -15,7 +15,7 @@ public class JsonTest
     public static void main(String[] args) throws Exception
     {
         JsonTest json = new JsonTest();
-        json.doItArray();
+        json.doItPlaceholder();
     }
 
     public void doIt() throws Exception {
@@ -68,9 +68,7 @@ public class JsonTest
                         + response.getStatusLine().getStatusCode());
             }
 
-            javax.json.Json.createArrayBuilder()
-
-            reader = javax.json.Json.createReader(new InputStreamReader((response.getEntity().getContent())))
+            reader = javax.json.Json.createReader(new InputStreamReader((response.getEntity().getContent())));
             JsonArray array = reader.readArray();
 
             for (int j = 0; j < array.size(); j++  ) {
@@ -90,6 +88,39 @@ public class JsonTest
         }
         finally {
             if (reader != null) reader.close();
+            if (client != null) client.close();
+            if (response != null) response.close();
+            System.out.println("Done.");
+        }
+    }
+
+    public void doItPlaceholder() throws Exception
+    {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        HttpHost target = new HttpHost("jsonplaceholder.typicode.com", 80, "http");
+        HttpGet request = new HttpGet("/posts/1");
+        request.addHeader("accept", "application/json");
+        CloseableHttpResponse response = null;
+        try {
+            response = client.execute(target, request);
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                throw new Exception("Failed : HTTP error code : "
+                        + response.getStatusLine().getStatusCode());
+            }
+
+            Gson gson = new Gson();
+            JsonPlaceHolderPosts jphp = gson.fromJson(new InputStreamReader
+                    (response.getEntity().getContent()), JsonPlaceHolderPosts.class);
+            System.out.println("id : " + jphp.getId()) ;
+            System.out.println("title : " + jphp.getTitle()) ;
+           /*
+              ouput:
+              id : 1
+              title : sunt aut facere repellat provident occaecati excepturi optio reprehenderit
+              Done.
+           */
+        }
+        finally {
             if (client != null) client.close();
             if (response != null) response.close();
             System.out.println("Done.");
